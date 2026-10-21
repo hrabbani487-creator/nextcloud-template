@@ -1,0 +1,70 @@
+name: nextcloud-by-harish
+
+services:
+  db:
+    image: mariadb:10.11
+    container_name: nextcloud-db-harish
+    restart: always
+    command: --transaction-isolation=READ-COMMITTED --log-bin=binlog --binlog-format=ROW
+    volumes:
+      - db_data:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD:-1234}
+      - MYSQL_DATABASE=${MYSQL_DATABASE:-nextcloud}
+      - MYSQL_USER=${MYSQL_USER:-nextcloud}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD:-1234}
+    networks:
+      - nextcloud-net-harish
+    labels:
+      - "maintainer=Harish"
+      - "description=Nextcloud MariaDB Stack Developed by Harish"
+
+  app:
+    image: nextcloud:latest
+    container_name: nextcloud-app-harish
+    restart: always
+    ports:
+      - "${NEXTCLOUD_PORT:-8080}:80"
+    volumes:
+      - nextcloud_html:/var/www/html
+      - nextcloud_data:/var/www/html/data
+    environment:
+      - MYSQL_HOST=db
+      - MYSQL_DATABASE=${MYSQL_DATABASE:-nextcloud}
+      - MYSQL_USER=${MYSQL_USER:-nextcloud}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD:-1234}
+      - NEXTCLOUD_ADMIN_USER=${NEXTCLOUD_ADMIN_USER:-admin}
+      - NEXTCLOUD_ADMIN_PASSWORD=${NEXTCLOUD_ADMIN_PASSWORD:-1234}
+    depends_on:
+      - db
+    networks:
+      - nextcloud-net-harish
+    labels:
+      - "maintainer=Harish"
+      - "description=Nextcloud MariaDB Stack Developed by Harish"
+
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: nextcloud-pma-harish
+    restart: always
+    ports:
+      - "${PMA_PORT:-8082}:80"
+    environment:
+      - PMA_HOST=db
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD:-1234}
+    depends_on:
+      - db
+    networks:
+      - nextcloud-net-harish
+    labels:
+      - "maintainer=Harish"
+      - "description=Nextcloud MariaDB Stack Developed by Harish"
+
+volumes:
+  db_data:
+  nextcloud_html:
+  nextcloud_data:
+
+networks:
+  nextcloud-net-harish:
+    driver: bridge
